@@ -1,5 +1,7 @@
 # Express.js MinIO Example
 
+![](./screenshots/results.png)
+
 ![](./screenshots/img.png)
 
 This example shows how to develop a simple Express.js application that uses MinIO as a storage backend.
