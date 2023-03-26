@@ -13,12 +13,18 @@ const init = async () => {
   // Once you deploy a MinIO service in the same project with this app,
   // Zeabur will automatically set these environment variables for you.
 
-  const endPoint = process.env.STORAGE_ENDPOINT
+  let endPoint = process.env.STORAGE_ENDPOINT
   if (!endPoint) {
     console.info('STORAGE_ENDPOINT is not set. Did you deploy a MinIO service?')
     console.info('If you are running this app locally, you can get the endpoint from the "domain" tab of MinIO service in the Zeabur dashboard.')
     process.exit(1)
   }
+
+  // endPoint provided by Zeabur is in the form of "host:port", but MinIO client
+  // expects "host" and "port" separately. So we need to split it.
+  const endPointParts = endPoint.split(':');
+  endPoint = endPointParts[0];
+  const port = parseInt(endPointParts[1]);
 
   const accessKey = process.env.STORAGE_USER
   if (!accessKey) {
@@ -36,11 +42,7 @@ const init = async () => {
 
   // create a MinIO client with credentials from Zeabur
   console.info('Connecting to MinIO storage...')
-  minioClient = new minio.Client({
-    endPoint, accessKey, secretKey,
-    port: 443,
-    useSSL: true,
-  })
+  minioClient = new minio.Client({endPoint, accessKey, secretKey, port, useSSL: true})
   console.info('Connected!')
 
   // check if the bucket exists, if not, create it
