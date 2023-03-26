@@ -40,9 +40,16 @@ const init = async () => {
     process.exit(1)
   }
 
+  // if the port is 443, we need to set useSSL to true
+  // notice that if app is running on Zeabur, the port won't be 443
+  let useSSL = true;
+  if(port != 443) {
+    useSSL = false;
+  }
+
   // create a MinIO client with credentials from Zeabur
   console.info('Connecting to MinIO storage...')
-  minioClient = new minio.Client({endPoint, accessKey, secretKey, port, useSSL: true})
+  minioClient = new minio.Client({endPoint, accessKey, secretKey, port, useSSL})
   console.info('Connected!')
 
   // check if the bucket exists, if not, create it
