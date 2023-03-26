@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "build": "esbuild app.ts --bundle --outfile=dist/app.js --minify --sourcemap",
+    "build": "esbuild app.ts --bundle --outfile=dist/app.js --minify --sourcemap --platform=node",
     "start": "node dist/app.js",
     "dev": "tsx watch ./app.ts"
   },
