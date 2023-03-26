@@ -96,7 +96,7 @@ app.get('/', (req, res) => {
       <p>Run following bash command to create a text file:</p>
       <pre>echo "Hello World" > hello.txt</pre>
       <p>Then, run following curl command to upload the file to MinIO storage.</p>
-      <pre>curl -X POST -T test.txt https://minio-express-example.zeabur.app/upload</pre> 
+      <pre>curl -X POST -T hello.txt https://minio-express-example.zeabur.app/upload</pre> 
     </body>
   </html>
   `)
@@ -105,7 +105,7 @@ app.get('/', (req, res) => {
 app.post('/upload', async (req, res) => {
   const randomFileName = Math.random().toString(36).substring(7)
   await minioClient.putObject(bucketName, randomFileName, req)
-  res.end('https://minio-example.zeabur.app/' + bucketName + '/' + randomFileName)
+  res.end('Your file is now available at https://minio-example.zeabur.app/' + bucketName + '/' + randomFileName + ' !')
 })
 
 
