@@ -9,7 +9,7 @@ let minioClient: minio.Client;
 
 const init = async () => {
 
-  // STORAGE_ENDPOINT, STORAGE_USER and STORAGE_PASSWORD are set by Zeabur
+  // STORAGE_ENDPOINT, STORAGE_PORT, STORAGE_USER, STORAGE_PASSWORD, STORAGE_USE_SSL are set by Zeabur
   // Once you deploy a MinIO service in the same project with this app,
   // Zeabur will automatically set these environment variables for you.
 
@@ -20,11 +20,13 @@ const init = async () => {
     process.exit(1)
   }
 
-  // endPoint provided by Zeabur is in the form of "host:port", but MinIO client
-  // expects "host" and "port" separately. So we need to split it.
-  const endPointParts = endPoint.split(':');
-  endPoint = endPointParts[0];
-  const port = parseInt(endPointParts[1]);
+  let portStr = process.env.STORAGE_PORT
+  if (!portStr) {
+    console.info('STORAGE_PORT is not set. Did you deploy a MinIO service?')
+    console.info('If you are running this app locally, you can get the port from the "domain" tab of MinIO service in the Zeabur dashboard.')
+    process.exit(1)
+  }
+  const port = parseInt(portStr)
 
   const accessKey = process.env.STORAGE_USER
   if (!accessKey) {
@@ -40,12 +42,13 @@ const init = async () => {
     process.exit(1)
   }
 
-  // if the port is 443, we need to set useSSL to true
-  // notice that if app is running on Zeabur, the port won't be 443
-  let useSSL = true;
-  if(port != 443) {
-    useSSL = false;
+  const useSSLStr = process.env.STORAGE_USE_SSL
+  if(useSSLStr === undefined) {
+    console.info('STORAGE_USE_SSL is not set. Did you deploy a MinIO service?')
+    console.info('If you are running this app locally, you can get the useSSL value from the "connect" tab of MinIO service in the Zeabur dashboard.')
+    process.exit(1)
   }
+  const useSSL = useSSLStr === 'true'
 
   // create a MinIO client with credentials from Zeabur
   console.info('Connecting to MinIO storage...')
