@@ -1,5 +1,9 @@
 import express from 'express';
 import * as minio from 'minio';
+import * as dotenv from 'dotenv';
+import crypto from 'crypto';
+
+dotenv.config()
 
 const app = express();
 
@@ -103,11 +107,46 @@ app.get('/', (req, res) => {
 })
 
 app.post('/upload', async (req, res) => {
-  const randomFileName = Math.random().toString(36).substring(7)
+  const randomFileName = crypto.randomUUID()
   await minioClient.putObject(bucketName, randomFileName, req)
-  res.end('Your file is now available at https://minio-example.zeabur.app/' + bucketName + '/' + randomFileName + ' !')
+  res.end('Your file is now available at https://minio-example.zeabur.app/objects/' + randomFileName + ' !')
 })
 
+app.get('/objects/:objectName', async (req, res) => {
+  const objectName = req.params.objectName
+  const stream = await minioClient.getObject(bucketName, objectName)
+  stream.pipe(res)
+})
+
+app.get('/objects', async (req, res) => {
+  const stream = await minioClient.listObjects(bucketName)
+  let objects: minio.BucketItem[] = []
+  stream.on('data', (obj) => {
+    objects.push(obj)
+  })
+  stream.on('end', () => {
+    res.writeHead(200, { 'Content-Type': 'text/html' })
+    res.write(`
+    <html lang="en-US">
+      <head>
+        <title>Express MinIO example</title>
+      </head>
+      <body>
+        <h1>Express MinIO example</h1>
+        <p>Here are the files you uploaded:</p>
+        <ul>
+          ${objects.map(object => `<li><a href="/objects/${object.name}">${object.name}</a></li>`).join('')}
+        </ul>
+      </body>
+    </html>
+    `)
+    res.end()
+  })
+  stream.on('error', (err) => {
+    console.error(err)
+    res.status(500).end('Something went wrong!')
+  })
+})
 
 const main = async () => {
   await init();
